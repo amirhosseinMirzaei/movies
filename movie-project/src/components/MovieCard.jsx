@@ -1,6 +1,7 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
+import "../css/MovieCard.css";
 
 export const MovieCard = ({ movie }) => {
   function onFavoriteClick() {
