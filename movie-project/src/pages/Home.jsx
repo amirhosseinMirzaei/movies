@@ -1,31 +1,41 @@
 import "../css/Home.css";
 
 import { MovieCard } from "../components/MovieCard";
-import { useState } from "react";
+import { useState, useEffect, use } from "react";
+import { searchMovies, getPopularMovie } from "../services/api";
 export const Home = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [movies, setMovies] = useState([]);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const loadPopularMovies = async () => {
+      try {
+        const popularMovies = await getPopularMovie();
+        setMovies(popularMovies);
+      } catch (e) {
+        setError("Failed to load movies...");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadPopularMovies();
+  }, []);
 
-  const movies = [
-    {
-      id: 1,
-      title: "John Wick",
-      release_date: "2020",
-    },
-    {
-      id: 2,
-      title: "Terminator",
-      release_date: "2020",
-    },
-    {
-      id: 3,
-      title: "Fall",
-      release_date: "2020",
-    },
-  ];
-
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
-    setSearchQuery("");
+    if (!searchQuery.trim()) return;
+    if (loading) return;
+    setLoading(true);
+    try {
+      const searchResults = await searchMovies(searchQuery);
+      setMovies(searchResults);
+      setError(null);
+    } catch (err) {
+      setError("failed to search movie...");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -42,11 +52,16 @@ export const Home = () => {
           Search
         </button>
       </form>
-      <div className="movies-grid">
-        {movies.map((movie) => (
-          <MovieCard key={movie.id} movie={movie}></MovieCard>
-        ))}
-      </div>
+      {error & <div className="error-message">{error}</div>}
+      {loading ? (
+        <div className="loading"></div>
+      ) : (
+        <div className="movies-grid">
+          {movies.map((movie) => (
+            <MovieCard key={movie.id} movie={movie}></MovieCard>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
